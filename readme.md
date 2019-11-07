@@ -21,3 +21,5 @@ private_key_path = ""
 5.) `terraform destroy` - will destroy all resources created
 
 Terraform needs a way to store the state of your deployment. It does this using json format. It stores resource mappings and metadata. It supports locking. It can be stored either locally or remotely e.g. s3
+Terraform planning takes into consideration of dependency graph. In that case one resource that depends on the other will not be created if one fails e.g. ec2 instance and subnets
+
