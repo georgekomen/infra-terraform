@@ -36,14 +36,14 @@ data "aws_ami" "aws-linux" {
 }
 
 # resources
-resource "aws_default_vpc" "komen-vpc" {
+resource "aws_default_vpc" "default" {
   
 }
 
 resource "aws_security_group" "allow_ssh" {
     name = "nginx_komen_sg"
     description = "allow ports for nginx komen"
-    vpc_id = aws_default_vpc.komen-vpc.id
+    vpc_id = aws_default_vpc.default.id
 
     ingress {
         from_port = 22
