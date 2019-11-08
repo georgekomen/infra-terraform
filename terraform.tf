@@ -115,7 +115,7 @@ resource "aws_security_group" "elb-sg" {
   }
 }
 
-resource "aws_security_group" "allow_ssh" {
+resource "aws_security_group" "allow-ssh" {
     name = "nginx_komen_sg"
     description = "allow ports for nginx komen"
     vpc_id = aws_vpc.vpc.id
@@ -141,13 +141,29 @@ resource "aws_security_group" "allow_ssh" {
         cidr_blocks = ["0.0.0.0/0"]
     }
 }
+#load balancer
+resource "aws_elb" "web" {
+  name = "nginx-elb"
+
+  subnets = [aws_subnet.subnet1.id, aws_subnet.subnet2.id]
+  security_groups = [aws_security_group.elb-sg.id]
+  instances = [aws_instance.nginx1.id, aws_instance.nginx2.id]
+
+  listener {
+      instance_port = 80
+      instance_protocol = "http"
+      lb_port = 80
+      lb_protocol = "http"
+  }
+}
+
 # Instance
-resource "aws_instance" "nginx" {
+resource "aws_instance" "nginx1" {
   ami = data.aws_ami.aws-linux.id
   instance_type = "t2.micro"
   subnet_id = aws_subnet.subnet1.id
   key_name = var.key_name
-  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+  vpc_security_group_ids = [aws_security_group.allow-ssh.id]
 
   connection {
       type = "ssh"
@@ -164,9 +180,32 @@ resource "aws_instance" "nginx" {
   }
 }
 
+resource "aws_instance" "nginx2" {
+  ami = data.aws_ami.aws-linux.id
+  instance_type = "t2.micro"
+  subnet_id = aws_subnet.subnet2.id
+  vpc_security_group_ids = [aws_security_group.allow-ssh.id]
+  key_name = var.key_name
+
+  connection {
+      type = "ssh"
+      host = self.public_ip
+      user = "ec2-user"
+      private_key = file(var.private_key_path)
+  }
+
+  provisioner "remote-exec" {
+      inline= [
+          "sudo yum install nginx -y",
+          "sudo service nginx start"
+      ]
+  }
+}
+
+
 # output
 output "aws_instance_public_dns" {
-  value = aws_instance.nginx.public_dns
+  value = aws_elb.web.dns_name
 }
 
 
