@@ -64,6 +64,7 @@ resource "aws_subnet" "subnet1" {
   map_public_ip_on_launch = "true"
   availability_zone = data.aws_availability_zones.available.names[0]
 }
+
 resource "aws_subnet" "subnet2" {
   cidr_block = var.subnet2_address_space
   vpc_id = aws_vpc.vpc.id
@@ -87,7 +88,33 @@ resource "aws_route_table_association" "rta-subnet1" {
   route_table_id = aws_route_table.rtb.id
 }
 
-# security group
+resource "aws_route_table_association" "rta-subnet2" {
+  subnet_id = aws_subnet.subnet2.id
+  route_table_id = aws_route_table.rtb.id
+}
+
+# security groups
+resource "aws_security_group" "elb-sg" {
+  name = "nginx_elb_sg"
+  vpc_id = aws_vpc.vpc.id
+
+  #allow http from anywhere
+  ingress {
+      from_port = 80
+      to_port = 80
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  #allow all outbound
+  egress {
+      from_port = 0
+      to_port = 0
+      protocol = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_security_group" "allow_ssh" {
     name = "nginx_komen_sg"
     description = "allow ports for nginx komen"
