@@ -1,4 +1,4 @@
-# variables
+# Variables
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
 variable "private_key_path" {}
@@ -15,15 +15,27 @@ variable "subnet1_address_space" {
 variable "subnet2_address_space" {
   default = "10.1.1.0/24"
 }
+variable "bucket_name_prefix" {}
+variable "billing_code_tag" {}
+variable "environment_tag" {}
 
-# providers
+# Providers
 provider "aws" {
     access_key = var.aws_access_key
     secret_key = var.aws_secret_key
     region = var.region
 }
 
-# data
+# Locals
+locals {
+  common_tags = {
+    BillingCode = var.billing_code_tag
+    Environment = var.environment_tag
+  }
+  s3_bucket_name = "${var.bucket_name_prefix}-${var.environment_tag}-${random_integer.rand.result}"
+}
+
+# Data
 data "aws_availability_zones" "available" {
 
 }
@@ -48,14 +60,25 @@ data "aws_ami" "aws-linux" {
   }
 }
 
-# resources
+# Resources
+
+#random integer
+resource "random_integer" "rand" {
+  min = 10000
+  max = 99999
+}
+
 resource "aws_vpc" "vpc" {
   cidr_block = var.network_address_space
   enable_dns_hostnames = "true"
+
+  tags = merge(local.common_tags, { Name = "${var.environment_tag}-vpc" })
 }
 
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
+
+  tags = merge(local.common_tags, { Name = "${var.environment_tag}-igw" })
 }
 
 resource "aws_subnet" "subnet1" {
@@ -72,7 +95,7 @@ resource "aws_subnet" "subnet2" {
   availability_zone = data.aws_availability_zones.available.names[1]
 }
 
-#Routing
+# Routing
 resource "aws_route_table" "rtb" {
   vpc_id = aws_vpc.vpc.id
 
@@ -92,12 +115,12 @@ resource "aws_route_table_association" "rta-subnet2" {
   route_table_id = aws_route_table.rtb.id
 }
 
-# security groups
+# Security groups
 resource "aws_security_group" "elb-sg" {
   name = "nginx_elb_sg"
   vpc_id = aws_vpc.vpc.id
 
-  #allow http from anywhere
+  # allow http from anywhere
   ingress {
       from_port = 80
       to_port = 80
@@ -105,7 +128,7 @@ resource "aws_security_group" "elb-sg" {
       cidr_blocks = ["0.0.0.0/0"]
   }
 
-  #allow all outbound
+  # allow all outbound
   egress {
       from_port = 0
       to_port = 0
@@ -140,7 +163,7 @@ resource "aws_security_group" "nginx-instance-sg" {
         cidr_blocks = ["0.0.0.0/0"]
     }
 }
-#load balancer
+# Load balancer
 resource "aws_elb" "web" {
   name = "nginx-elb"
 
@@ -201,7 +224,7 @@ resource "aws_instance" "nginx2" {
   }
 }
 
-# output
+# Output
 output "aws_instance_public_dns" {
   value = aws_elb.web.dns_name
 }
