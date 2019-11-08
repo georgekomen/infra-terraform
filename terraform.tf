@@ -4,7 +4,7 @@ variable "aws_secret_key" {}
 variable "private_key_path" {}
 variable "key_name" {}
 variable "region" {
-    default = "ap-southeast-1"
+  default = "ap-southeast-1"
 }
 variable "network_address_space" {
   default = "10.1.0.0/16" #for vpc
@@ -13,7 +13,7 @@ variable "subnet1_address_space" {
   default = "10.1.0.0/24" #for subnet 1
 }
 variable "subnet2_address_space" {
-    default = "10.1.1.0/24"
+  default = "10.1.1.0/24"
 }
 
 # providers
@@ -71,7 +71,6 @@ resource "aws_subnet" "subnet2" {
   map_public_ip_on_launch = "true"
   availability_zone = data.aws_availability_zones.available.names[1]
 }
-
 
 #Routing
 resource "aws_route_table" "rtb" {
@@ -184,8 +183,8 @@ resource "aws_instance" "nginx2" {
   ami = data.aws_ami.aws-linux.id
   instance_type = "t2.micro"
   subnet_id = aws_subnet.subnet2.id
-  vpc_security_group_ids = [aws_security_group.nginx-instance-sg.id]
   key_name = var.key_name
+  vpc_security_group_ids = [aws_security_group.nginx-instance-sg.id]
 
   connection {
       type = "ssh"
@@ -195,7 +194,7 @@ resource "aws_instance" "nginx2" {
   }
 
   provisioner "remote-exec" {
-      inline= [
+      inline = [
           "sudo yum install nginx -y",
           "sudo service nginx start"
       ]
