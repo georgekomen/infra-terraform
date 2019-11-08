@@ -115,7 +115,7 @@ resource "aws_security_group" "elb-sg" {
   }
 }
 
-resource "aws_security_group" "allow-ssh" {
+resource "aws_security_group" "nginx-instance-sg" {
     name = "nginx_komen_sg"
     description = "allow ports for nginx komen"
     vpc_id = aws_vpc.vpc.id
@@ -163,7 +163,7 @@ resource "aws_instance" "nginx1" {
   instance_type = "t2.micro"
   subnet_id = aws_subnet.subnet1.id
   key_name = var.key_name
-  vpc_security_group_ids = [aws_security_group.allow-ssh.id]
+  vpc_security_group_ids = [aws_security_group.nginx-instance-sg.id]
 
   connection {
       type = "ssh"
@@ -184,7 +184,7 @@ resource "aws_instance" "nginx2" {
   ami = data.aws_ami.aws-linux.id
   instance_type = "t2.micro"
   subnet_id = aws_subnet.subnet2.id
-  vpc_security_group_ids = [aws_security_group.allow-ssh.id]
+  vpc_security_group_ids = [aws_security_group.nginx-instance-sg.id]
   key_name = var.key_name
 
   connection {
