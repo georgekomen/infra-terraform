@@ -12,6 +12,9 @@ variable "network_address_space" {
 variable "subnet1_address_space" {
   default = "10.1.0.0/24" #for subnet 1
 }
+variable "subnet2_address_space" {
+    default = "10.1.1.0/24"
+}
 
 # providers
 provider "aws" {
@@ -61,6 +64,13 @@ resource "aws_subnet" "subnet1" {
   map_public_ip_on_launch = "true"
   availability_zone = data.aws_availability_zones.available.names[0]
 }
+resource "aws_subnet" "subnet2" {
+  cidr_block = var.subnet2_address_space
+  vpc_id = aws_vpc.vpc.id
+  map_public_ip_on_launch = "true"
+  availability_zone = data.aws_availability_zones.available.names[1]
+}
+
 
 #Routing
 resource "aws_route_table" "rtb" {
