@@ -23,3 +23,7 @@ private_key_path = ""
 Terraform needs a way to store the state of your deployment. It does this using json format. It stores resource mappings and metadata. It supports locking. It can be stored either locally or remotely e.g. s3
 Terraform planning takes into consideration of dependency graph. In that case one resource that depends on the other will not be created if one fails e.g. ec2 instance and subnets
 
+6.) `terraform console` - this returns a terraform CLI where you can execute terraform functions e.g. numeric functions like: min(1,2,3), network functions like cidrsubnet(var.network_address_space, 8, 0) & cidrhost(cidrsubnet(var.network_address_space, 8, 0),5), map functions like lookup(local.common_tags, "BillingCode", "Unknown")
+
+7.) terraform  `env` command is deprecated and the new command is `workspace`
+
