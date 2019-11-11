@@ -267,17 +267,17 @@ resource "aws_instance" "nginx2" {
 resource "aws_iam_role" "allow_nginx_s3" {
   name = "allow_nginx_s3"
 
-  assume_role_policy = <<<EOF
+  assume_role_policy = <<EOF
   {
-    "Version" : "2012-10-17",
+    "Version": "2012-10-17",
     "Statement": [
       {
-      "Action" : "sts:AssumeRole",
-      "Principal" : {
-        "Service" : "ec2.amazonaws.com"
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
       },
-      "Effect" : "Allow",
-      "Sid" : ""
+      "Effect": "Allow",
+      "Sid": ""
       }
     ]
   }
@@ -293,16 +293,16 @@ resource "aws_iam_role_policy" "allow_s3_all" {
   name = "allow_s3_all"
   role = aws_iam_role.allow_nginx_s3.name
 
-  policy = <<<EOF
+  policy = <<EOF
   {
-    "Version" : "2012-10-17",
+    "Version": "2012-10-17",
     "Statement" : [
       {
-        "Action" : [
+        "Action": [
           "s3 : *"
         ],
-        "Effect" : "Allow",
-        "Resource" : [
+        "Effect": "Allow",
+        "Resource": [
           "arn:aws:s3:::${local.s3_bucket_name}",
           "arn:aws:s3:::${local.s3_bucket_name}/*"
         ]
@@ -310,6 +310,28 @@ resource "aws_iam_role_policy" "allow_s3_all" {
     ]
   }
   EOF
+}
+
+# create s3 bucket
+resource "aws_s3_bucket" "web_bucket" {
+  bucket = local.s3_bucket_name
+  acl = "private"
+  force_destroy = true
+
+  tags = merge(local.common_tags, { Name = "${var.environment_tag}-web-bucket" })
+}
+
+# upload objects
+resource "aws_s3_bucket_object" "website" {
+  bucket = aws_s3_bucket.web_bucket.bucket
+  key = "/website/index.html"
+  source = "./index.html"
+}
+
+resource "aws_s3_bucket_object" "graphic" {
+  bucket = aws_s3_bucket.web_bucket.bucket
+  key = "/website/pic.png"
+  source = "./pic.png"
 }
 
 # Output
