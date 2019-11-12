@@ -55,3 +55,7 @@ e.g.
     #in-line
     terraform plan -var 'env_name=prod'
 ```
+
+multiple env decisions : state managment, variable data, credentials management
+
+11.) using `terraform workspace new dev`
