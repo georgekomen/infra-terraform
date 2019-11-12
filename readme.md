@@ -17,6 +17,12 @@ aws_secret_key = ""
 key_name = ""
 
 private_key_path = ""
+
+bucket_name_prefix = ""
+
+billing_code_tag = ""
+
+environment_tag = ""
 ```
 5.) `terraform destroy` - will destroy all resources created
 
@@ -27,3 +33,4 @@ Terraform planning takes into consideration of dependency graph. In that case on
 
 7.) terraform  `env` command is deprecated and the new command is `workspace`
 
+8.) resource arguments e.g. `depends_on` for declaring dependency, `count` and `for_each` are for loops. `provider` is for creation provider

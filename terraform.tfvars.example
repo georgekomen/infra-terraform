@@ -1,0 +1,13 @@
+aws_access_key = ""
+
+aws_secret_key = ""
+
+key_name = ""
+
+private_key_path = ""
+
+bucket_name_prefix = ""
+
+billing_code_tag = ""
+
+environment_tag = ""
