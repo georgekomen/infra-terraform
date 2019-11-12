@@ -34,3 +34,7 @@ Terraform planning takes into consideration of dependency graph. In that case on
 7.) terraform  `env` command is deprecated and the new command is `workspace`
 
 8.) resource arguments e.g. `depends_on` for declaring dependency, `count` and `for_each` are for loops. `provider` is for creation provider
+
+9.) example using `cidrsubnet` e.g. cidrsubnet(10.1.0.0/16, 8, 0) =>  10.1.0.0/24
+                                    cidrsubnet(10.1.0.0/16, 8, 1) =>  10.1.1.0/24
+                                    cidrsubnet(10.1.0.0/16, 8, 5) =>  10.1.5.0/24
