@@ -7,24 +7,9 @@
 
 `terraform plan` works by looking at your existing env, compares it with what you want to do and come up with a plan.# infra-terraform
 
-4.) For authentication into your aws account, I have a separate file not included in the remote git repo, that is terraform.tfvars and has the following content:
+4.) For authentication into your aws account, I have a separate file not included in the remote git repo, that is terraform.tfvars and has contents declared in `terraform.tfvars.example`
 
-```
-aws_access_key = ""
-
-aws_secret_key = ""
-
-key_name = ""
-
-private_key_path = ""
-
-bucket_name_prefix = ""
-
-billing_code_tag = ""
-
-environment_tag = ""
-```
-5.) `terraform destroy` - will destroy all resources created
+5.) `terraform destroy -state <path>` - will destroy all resources created
 
 Terraform needs a way to store the state of your deployment. It does this using json format. It stores resource mappings and metadata. It supports locking. It can be stored either locally or remotely e.g. s3
 Terraform planning takes into consideration of dependency graph. In that case one resource that depends on the other will not be created if one fails e.g. ec2 instance and subnets
@@ -59,3 +44,4 @@ e.g.
 multiple env decisions : state managment, variable data, credentials management
 
 11.) using `terraform workspace new dev`
+           `terraform workspace select dev`

@@ -1,72 +1,4 @@
-# Variables
-variable "aws_access_key" {}
-variable "aws_secret_key" {}
-variable "private_key_path" {}
-variable "key_name" {}
-variable "region" {
-  default = "ap-southeast-1"
-}
-variable "network_address_space" {
-  type = map(string)
-}
-variable "subnet_count" {
-  type = map(number)
-}
-variable "instance_size" {
-  type = map(string)
-}
-variable "instance_count" {
-  type = map(number)
-}
-variable "bucket_name_prefix" {}
-variable "billing_code_tag" {}
-variable "environment_tag" {}
-
-# Providers
-provider "aws" {
-    access_key = var.aws_access_key
-    secret_key = var.aws_secret_key
-    region = var.region
-}
-
-# Locals
-locals {
-  env_name = lower(terraform.workspace) //get current workspace
-
-  common_tags = {
-    BillingCode = var.billing_code_tag
-    Environment = local.env_name
-  }
-  s3_bucket_name = "${var.bucket_name_prefix}-${local.env_name}-${random_integer.rand.result}"
-}
-
-# Data
-data "aws_availability_zones" "available" {
-
-}
-
-data "aws_ami" "aws-linux" {
-  most_recent = true
-  owners = ["amazon"]
-
-  filter {
-      name = "name"
-      values = ["amzn-ami-hvm*"]
-  }
-
-  filter {
-      name = "root-device-type"
-      values = ["ebs"]
-  }
-
-  filter {
-      name = "virtualization-type"
-      values = ["hvm"]
-  }
-}
-
 # Resources
-
 #random integer
 resource "random_integer" "rand" {
   min = 10000
@@ -160,6 +92,7 @@ resource "aws_security_group" "nginx-instance-sg" {
         cidr_blocks = ["0.0.0.0/0"]
     }
 }
+
 # Load balancer
 resource "aws_elb" "web" {
   name = "nginx-elb"
@@ -315,9 +248,4 @@ resource "aws_s3_bucket_object" "graphic" {
   bucket = aws_s3_bucket.web_bucket.bucket
   key = "/website/pic.png"
   source = "./assets/pic.png"
-}
-
-# Output
-output "aws_instance_public_dns" {
-  value = aws_elb.web.dns_name
 }
