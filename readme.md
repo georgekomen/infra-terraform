@@ -7,7 +7,7 @@
 
 `terraform plan` works by looking at your existing env, compares it with what you want to do and come up with a plan.# infra-terraform
 
-4.) For authentication into your aws account, I have a separate file not included in the remote git repo, that is terraform.tfvars and has contents declared in `terraform.tfvars.example`
+4.) For authentication into your aws account, I have a separate file not included in the remote git repo, that is secrets.tfvars and has aws secret and private keys.
 
 5.) `terraform destroy -state <path>` - will destroy all resources created
 
