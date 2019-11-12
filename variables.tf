@@ -1,4 +1,10 @@
 # Variables
+#random integer
+resource "random_integer" "rand" {
+  min = 10000
+  max = 99999
+}
+
 variable "aws_access_key" {
     
 }
