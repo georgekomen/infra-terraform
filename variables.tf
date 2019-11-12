@@ -38,9 +38,6 @@ variable "bucket_name_prefix" {
 variable "billing_code_tag" {
 
 }
-variable "environment_tag" {
-
-}
 
 # Locals
 locals {

@@ -23,7 +23,7 @@ resource "aws_subnet" "subnet" {
 }
 
 # Routing
-resource "aws_route_table" "rtb" {
+resource "aws_route_table" "rt" {
   vpc_id = aws_vpc.vpc.id
 
   route {
@@ -32,10 +32,10 @@ resource "aws_route_table" "rtb" {
   }
 }
 
-resource "aws_route_table_association" "rta-subnet1" {
+resource "aws_route_table_association" "rta" {
   count = var.subnet_count[terraform.workspace]
   subnet_id = aws_subnet.subnet[count.index].id
-  route_table_id = aws_route_table.rtb.id
+  route_table_id = aws_route_table.rt.id
 }
 
 # Security groups
