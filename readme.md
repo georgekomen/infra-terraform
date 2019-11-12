@@ -38,3 +38,20 @@ Terraform planning takes into consideration of dependency graph. In that case on
 9.) example using `cidrsubnet` e.g. cidrsubnet(10.1.0.0/16, 8, 0) =>  10.1.0.0/24
                                     cidrsubnet(10.1.0.0/16, 8, 1) =>  10.1.1.0/24
                                     cidrsubnet(10.1.0.0/16, 8, 5) =>  10.1.5.0/24
+
+10.) variables have a name, type and default. The last two are not a must. This values can be got from env variables files or from command line (var options). The precedence is also in that order.
+You could also have env variables in separate files
+e.g. 
+```
+    #specifying default in code
+    variable "env_name" {
+        type = string
+        default = "dev"
+    }
+
+    #in file
+    env_name = "uat"
+
+    #in-line
+    terraform plan -var 'env_name=prod'
+```
