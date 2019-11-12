@@ -9,13 +9,13 @@ resource "aws_vpc" "vpc" {
   cidr_block = var.network_address_space[terraform.workspace]
   enable_dns_hostnames = true
 
-  tags = merge(local.common_tags, { Name = "${var.environment_tag}-vpc" })
+  tags = merge(local.common_tags, { Name = "${local.env_name}-vpc" })
 }
 
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
-  tags = merge(local.common_tags, { Name = "${var.environment_tag}-igw" })
+  tags = merge(local.common_tags, { Name = "${local.env_name}-igw" })
 }
 
 resource "aws_subnet" "subnet" {
@@ -25,7 +25,7 @@ resource "aws_subnet" "subnet" {
   map_public_ip_on_launch = true
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
-  tags = merge(local.common_tags, { Name = "${var.environment_tag}-subnet${count.index + 1}" })
+  tags = merge(local.common_tags, { Name = "${local.env_name}-subnet${count.index + 1}" })
 }
 
 # Routing
@@ -175,7 +175,7 @@ EOF
     ]
   }
 
-  tags = merge(local.common_tags, { Name = "${var.environment_tag}-nginx${count.index + 1}" })
+  tags = merge(local.common_tags, { Name = "${local.env_name}-nginx${count.index + 1}" })
 }
 
 # S3 bucket config
@@ -234,7 +234,7 @@ resource "aws_s3_bucket" "web_bucket" {
   acl = "private"
   force_destroy = true
 
-  tags = merge(local.common_tags, { Name = "${var.environment_tag}-web-bucket" })
+  tags = merge(local.common_tags, { Name = "${local.env_name}-web-bucket" })
 }
 
 # upload objects
