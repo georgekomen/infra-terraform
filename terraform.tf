@@ -9,11 +9,11 @@ variable "region" {
 variable "network_address_space" {
   default = "10.1.0.0/16" #for vpc
 }
-variable "subnet1_address_space" {
-  default = "10.1.0.0/24" #for subnet 1
+variable "subnet_count" {
+  default = 2
 }
-variable "subnet2_address_space" {
-  default = "10.1.1.0/24"
+variable "instance_count" {
+  default = 2
 }
 variable "bucket_name_prefix" {}
 variable "billing_code_tag" {}
@@ -81,18 +81,14 @@ resource "aws_internet_gateway" "igw" {
   tags = merge(local.common_tags, { Name = "${var.environment_tag}-igw" })
 }
 
-resource "aws_subnet" "subnet1" {
-  cidr_block = var.subnet1_address_space
+resource "aws_subnet" "subnet" {
+  count = var.subnet_count
+  cidr_block = cidrsubnet(var.network_address_space, 8, count.index)
   vpc_id = aws_vpc.vpc.id
-  map_public_ip_on_launch = "true"
-  availability_zone = data.aws_availability_zones.available.names[0]
-}
+  map_public_ip_on_launch = true
+  availability_zone = data.aws_availability_zones.available.names[count.index]
 
-resource "aws_subnet" "subnet2" {
-  cidr_block = var.subnet2_address_space
-  vpc_id = aws_vpc.vpc.id
-  map_public_ip_on_launch = "true"
-  availability_zone = data.aws_availability_zones.available.names[1]
+  tags = merge(local.common_tags, { Name = "${var.environment_tag}-subnet${count.index + 1}" })
 }
 
 # Routing
@@ -106,12 +102,8 @@ resource "aws_route_table" "rtb" {
 }
 
 resource "aws_route_table_association" "rta-subnet1" {
-  subnet_id = aws_subnet.subnet1.id
-  route_table_id = aws_route_table.rtb.id
-}
-
-resource "aws_route_table_association" "rta-subnet2" {
-  subnet_id = aws_subnet.subnet2.id
+  count = var.subnet_count
+  subnet_id = aws_subnet.subnet[count.index].id
   route_table_id = aws_route_table.rtb.id
 }
 
@@ -167,9 +159,9 @@ resource "aws_security_group" "nginx-instance-sg" {
 resource "aws_elb" "web" {
   name = "nginx-elb"
 
-  subnets = [aws_subnet.subnet1.id, aws_subnet.subnet2.id]
+  subnets = aws_subnet.subnet[*].id
   security_groups = [aws_security_group.elb-sg.id]
-  instances = [aws_instance.nginx1.id, aws_instance.nginx2.id]
+  instances = aws_instance.nginx[*].id
 
   listener {
       instance_port = 80
@@ -180,13 +172,15 @@ resource "aws_elb" "web" {
 }
 
 # Instance
-resource "aws_instance" "nginx1" {
+resource "aws_instance" "nginx" {
+  count = var.instance_count
   ami = data.aws_ami.aws-linux.id
   instance_type = "t2.micro"
-  subnet_id = aws_subnet.subnet1.id
+  subnet_id = aws_subnet.subnet[count.index % var.subnet_count].id
   key_name = var.key_name
   vpc_security_group_ids = [aws_security_group.nginx-instance-sg.id]
   iam_instance_profile = aws_iam_instance_profile.nginx_profile.name
+  depends_on = [aws_iam_role_policy.allow_s3_all]
 
   connection {
       type = "ssh"
@@ -218,7 +212,7 @@ EOF
     postrotate
     endscript
     lastaction
-        sudo /usr/local/bin/s3cmd sync --config=/home/ec2-user/.s3cfg /var/log/nginx/ s3://${aws_s3_bucket.web_bucket.id}/nginx/1/
+        sudo /usr/local/bin/s3cmd sync --config=/home/ec2-user/.s3cfg /var/log/nginx/ s3://${aws_s3_bucket.web_bucket.id}/nginx/${count.index + 1}/
     endscript
 }
 
@@ -242,70 +236,8 @@ EOF
 
     ]
   }
-}
 
-resource "aws_instance" "nginx2" {
-  ami = data.aws_ami.aws-linux.id
-  instance_type = "t2.micro"
-  subnet_id = aws_subnet.subnet2.id
-  key_name = var.key_name
-  vpc_security_group_ids = [aws_security_group.nginx-instance-sg.id]
-  iam_instance_profile = aws_iam_instance_profile.nginx_profile.name
-
-  connection {
-      type = "ssh"
-      host = self.public_ip
-      user = "ec2-user"
-      private_key = file(var.private_key_path)
-  }
-
-  provisioner "file" {
-    content = <<EOF
-access_key =
-secret_key =
-security_token =
-use_https = True
-bucket_location = US
-
-EOF
-    destination = "/home/ec2-user/.s3cfg"
-  }
-
-  provisioner "file" {
-    content = <<EOF
-/var/log/nginx/*log {
-    daily
-    rotate 10
-    missingok
-    compress
-    sharedscripts
-    postrotate
-    endscript
-    lastaction
-        sudo /usr/local/bin/s3cmd sync --config=/home/ec2-user/.s3cfg /var/log/nginx/ s3://${aws_s3_bucket.web_bucket.id}/nginx/2/
-    endscript
-}
-
-EOF
-    destination = "/home/ec2-user/nginx"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo yum install nginx -y",
-      "sudo service nginx start",
-      "sudo cp /home/ec2-user/.s3cfg /root/.s3cfg",
-      "sudo cp /home/ec2-user/nginx /etc/logrotate.d/nginx",
-      # "sudo pip install --upgrade pip",
-      "sudo pip install s3cmd",
-      "s3cmd get s3://${aws_s3_bucket.web_bucket.id}/website/index.html .",
-      "s3cmd get s3://${aws_s3_bucket.web_bucket.id}/website/pic.png .",
-      "sudo cp /home/ec2-user/index.html /usr/share/nginx/html/index.html",
-      "sudo cp /home/ec2-user/pic.png /usr/share/nginx/html/pic.png",
-      "sudo logrotate -f /etc/logrotate.conf"
-
-    ]
-  }
+  tags = merge(local.common_tags, { Name = "${var.environment_tag}-nginx${count.index + 1}" })
 }
 
 # S3 bucket config
