@@ -1,15 +1,16 @@
-# Providers
+# providers and data
 provider "aws" {
     access_key = var.aws_access_key
     secret_key = var.aws_secret_key
     region = var.region
 }
 
-# Data
+# availability zones
 data "aws_availability_zones" "available" {
 
 }
 
+# amis
 data "aws_ami" "aws-linux" {
   most_recent = true
   owners = ["amazon"]

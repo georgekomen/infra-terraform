@@ -1,4 +1,6 @@
-# Resources
+# vpc, internet gateways, subnets, route tables and security groups
+
+# vpc
 resource "aws_vpc" "vpc" {
   cidr_block = var.network_address_space[terraform.workspace]
   enable_dns_hostnames = true
@@ -6,12 +8,14 @@ resource "aws_vpc" "vpc" {
   tags = merge(local.common_tags, { Name = "${local.env_name}-vpc" })
 }
 
+# internet gateway
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
   tags = merge(local.common_tags, { Name = "${local.env_name}-igw" })
 }
 
+# subnet
 resource "aws_subnet" "subnet" {
   count = var.subnet_count[terraform.workspace]
   cidr_block = cidrsubnet(var.network_address_space[terraform.workspace], 8, count.index)
@@ -22,7 +26,7 @@ resource "aws_subnet" "subnet" {
   tags = merge(local.common_tags, { Name = "${local.env_name}-subnet${count.index + 1}" })
 }
 
-# Routing
+# route table
 resource "aws_route_table" "rt" {
   vpc_id = aws_vpc.vpc.id
 
@@ -32,13 +36,16 @@ resource "aws_route_table" "rt" {
   }
 }
 
+# route table association
 resource "aws_route_table_association" "rta" {
   count = var.subnet_count[terraform.workspace]
   subnet_id = aws_subnet.subnet[count.index].id
   route_table_id = aws_route_table.rt.id
 }
 
-# Security groups
+# security group
+
+# for elb
 resource "aws_security_group" "elb-sg" {
   name = "nginx_elb_sg"
   vpc_id = aws_vpc.vpc.id
@@ -60,6 +67,7 @@ resource "aws_security_group" "elb-sg" {
   }
 }
 
+# for instances
 resource "aws_security_group" "nginx-instance-sg" {
     name = "nginx_komen_sg"
     description = "allow ports for nginx komen"

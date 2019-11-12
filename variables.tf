@@ -1,10 +1,10 @@
-# Variables
-#random integer
+# random integer
 resource "random_integer" "rand" {
   min = 10000
   max = 99999
 }
 
+# variables
 variable "aws_access_key" {
     
 }
@@ -39,7 +39,7 @@ variable "billing_code_tag" {
 
 }
 
-# Locals
+# locals
 locals {
   env_name = lower(terraform.workspace) //get current workspace
 

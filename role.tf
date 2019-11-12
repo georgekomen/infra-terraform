@@ -1,4 +1,6 @@
-# S3 bucket config
+# roles, policies and instance profiles
+
+# role
 resource "aws_iam_role" "allow_nginx_s3" {
   name = "${local.env_name}_allow_nginx_s3"
 
@@ -19,11 +21,13 @@ resource "aws_iam_role" "allow_nginx_s3" {
   EOF
 }
 
+# instance profile
 resource "aws_iam_instance_profile" "nginx_profile" {
   name = "${local.env_name}_nginx_profile"
   role = aws_iam_role.allow_nginx_s3.name
 }
 
+# role policy
 resource "aws_iam_role_policy" "allow_s3_all" {
   name = "${local.env_name}_allow_s3_all"
 

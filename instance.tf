@@ -1,4 +1,6 @@
-# Load balancer
+# Load balancers and instances
+
+# elb
 resource "aws_elb" "web" {
   name = "nginx-elb"
 
@@ -14,7 +16,7 @@ resource "aws_elb" "web" {
   }
 }
 
-# Instance
+# instance
 resource "aws_instance" "nginx" {
   count = var.instance_count[terraform.workspace]
   ami = data.aws_ami.aws-linux.id
