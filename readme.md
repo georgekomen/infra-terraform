@@ -45,3 +45,5 @@ multiple env decisions : state managment, variable data, credentials management
 
 11.) using `terraform workspace new dev`
            `terraform workspace select dev`
+
+12.) Terraform module: are for code re-use, terraform registry, root module, modules have versioning, provider inheritance, no count

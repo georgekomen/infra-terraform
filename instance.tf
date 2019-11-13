@@ -4,7 +4,7 @@
 resource "aws_elb" "web" {
   name = "nginx-elb"
 
-  subnets = aws_subnet.subnet[*].id
+  subnets = module.vpc.public_subnets
   security_groups = [aws_security_group.elb-sg.id]
   instances = aws_instance.nginx[*].id
 
@@ -21,7 +21,7 @@ resource "aws_instance" "nginx" {
   count = var.instance_count[terraform.workspace]
   ami = data.aws_ami.aws-linux.id
   instance_type = var.instance_size[terraform.workspace]
-  subnet_id = aws_subnet.subnet[count.index % var.subnet_count[terraform.workspace]].id
+  subnet_id = module.vpc.public_subnets[count.index % var.subnet_count[terraform.workspace]]
   key_name = var.key_name
   vpc_security_group_ids = [aws_security_group.nginx-instance-sg.id]
   iam_instance_profile = aws_iam_instance_profile.nginx_profile.name

@@ -1,46 +1,17 @@
 # vpc, internet gateways, subnets, route tables and security groups
 
-# vpc
-resource "aws_vpc" "vpc" {
-  cidr_block = var.network_address_space[terraform.workspace]
-  enable_dns_hostnames = true
+# vpc from vpc module, creates the vpc, subnets, routing and internet gateway
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+  name = "${local.env_name}-vpc"
+  version = "2.15.0"
 
-  tags = merge(local.common_tags, { Name = "${local.env_name}-vpc" })
-}
+  cidr = var.network_address_space[terraform.workspace]
+  azs = slice(data.aws_availability_zones.available.names, 0, var.subnet_count[terraform.workspace])
+  public_subnets = data.template_file.public_cidrsubnet[*].rendered
+  private_subnets = []
 
-# internet gateway
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.vpc.id
-
-  tags = merge(local.common_tags, { Name = "${local.env_name}-igw" })
-}
-
-# subnet
-resource "aws_subnet" "subnet" {
-  count = var.subnet_count[terraform.workspace]
-  cidr_block = cidrsubnet(var.network_address_space[terraform.workspace], 8, count.index)
-  vpc_id = aws_vpc.vpc.id
-  map_public_ip_on_launch = true
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-
-  tags = merge(local.common_tags, { Name = "${local.env_name}-subnet${count.index + 1}" })
-}
-
-# route table
-resource "aws_route_table" "rt" {
-  vpc_id = aws_vpc.vpc.id
-
-  route {
-      cidr_block = "0.0.0.0/0"
-      gateway_id = aws_internet_gateway.igw.id
-  }
-}
-
-# route table association
-resource "aws_route_table_association" "rta" {
-  count = var.subnet_count[terraform.workspace]
-  subnet_id = aws_subnet.subnet[count.index].id
-  route_table_id = aws_route_table.rt.id
+  tags = local.common_tags
 }
 
 # security group
@@ -48,7 +19,7 @@ resource "aws_route_table_association" "rta" {
 # for elb
 resource "aws_security_group" "elb-sg" {
   name = "nginx_elb_sg"
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = module.vpc.vpc_id
 
   # allow http from anywhere
   ingress {
@@ -71,7 +42,7 @@ resource "aws_security_group" "elb-sg" {
 resource "aws_security_group" "nginx-instance-sg" {
     name = "nginx_komen_sg"
     description = "allow ports for nginx komen"
-    vpc_id = aws_vpc.vpc.id
+    vpc_id = module.vpc.vpc_id
 
     ingress {
         from_port = 22
