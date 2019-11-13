@@ -24,8 +24,8 @@ resource "aws_instance" "nginx" {
   subnet_id = module.vpc.public_subnets[count.index % var.subnet_count[terraform.workspace]]
   key_name = var.key_name
   vpc_security_group_ids = [aws_security_group.nginx-instance-sg.id]
-  iam_instance_profile = aws_iam_instance_profile.nginx_profile.name
-  depends_on = [aws_iam_role_policy.allow_s3_all]
+  iam_instance_profile = module.bucket.instance_profile.name
+  depends_on = [module.bucket]
 
   connection {
       type = "ssh"
@@ -57,7 +57,7 @@ EOF
     postrotate
     endscript
     lastaction
-        sudo /usr/local/bin/s3cmd sync --config=/home/ec2-user/.s3cfg /var/log/nginx/ s3://${aws_s3_bucket.web_bucket.id}/nginx/${count.index + 1}/
+        sudo /usr/local/bin/s3cmd sync --config=/home/ec2-user/.s3cfg /var/log/nginx/ s3://${module.bucket.bucket.id}/nginx/${count.index + 1}/
     endscript
 }
 
@@ -73,8 +73,8 @@ EOF
       "sudo cp /home/ec2-user/nginx /etc/logrotate.d/nginx",
       # "sudo pip install --upgrade pip",
       "sudo pip install s3cmd",
-      "s3cmd get s3://${aws_s3_bucket.web_bucket.id}/website/index.html .",
-      "s3cmd get s3://${aws_s3_bucket.web_bucket.id}/website/pic.png .",
+      "s3cmd get s3://${module.bucket.bucket.id}/website/index.html .",
+      "s3cmd get s3://${module.bucket.bucket.id}/website/pic.png .",
       "sudo cp /home/ec2-user/index.html /usr/share/nginx/html/index.html",
       "sudo cp /home/ec2-user/pic.png /usr/share/nginx/html/pic.png",
       "sudo logrotate -f /etc/logrotate.conf"
@@ -83,4 +83,32 @@ EOF
   }
 
   tags = merge(local.common_tags, { Name = "${local.env_name}-nginx${count.index + 1}" })
+}
+
+# s3 module
+module "bucket" {
+  name = local.s3_bucket_name
+
+  source = ".//modules//s3"
+  common_tags = local.common_tags
+}
+
+# upload objects
+resource "aws_s3_bucket_object" "website" {
+  bucket = module.bucket.bucket.id
+  key = "/website/index.html"
+  source = "./assets/index.html"
+}
+
+resource "aws_s3_bucket_object" "graphic" {
+  bucket = module.bucket.bucket.id
+  key = "/website/pic.png"
+  source = "./assets/pic.png"
+}
+
+# output
+
+# dns name
+output "aws_instance_public_dns" {
+  value = aws_elb.web.dns_name
 }
