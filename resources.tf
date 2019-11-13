@@ -87,10 +87,9 @@ EOF
 
 # s3 module
 module "bucket" {
-  name = local.s3_bucket_name
-
   source = ".//modules//s3"
-  common_tags = local.common_tags
+  name = local.s3_bucket_name
+  tags = local.common_tags
 }
 
 # upload objects
