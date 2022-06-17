@@ -24,3 +24,8 @@ Terraform :
 -   plural sight course on AWS terraform: https://www.pluralsight.com/courses/implementing-terraform-aws
 -   assume_role inside a provider scope means we want to assume a role that's in another account
 -   how to create a vpc peering connection between two accounts: https://app.pluralsight.com/course-player?clipId=14c7aadd-a4d0-4607-832a-a7fc25687ea6
+
+When you need VPC peering:
+**1.** VPCs are in different AWS accounts.
+**2.** VPCs are in same account but in different regions.
+**3.** 2 VPCs in thesame account.
