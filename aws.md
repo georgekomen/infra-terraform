@@ -14,8 +14,9 @@ Terraform :
 **1.** variables in .ts file, values in .tfvars file
 **2.** providers in .tf file, you can have more than one provider e.g., for different AWS accounts in same or different regions (also requires different aws profiles in your machine that contain creds e.g., secret keys for the different accounts), for same AWS accounts in different regions
 **3.** data sources, format is data source resource name and its local name
-**4.** resources
+**4.** resources e.g., vpc, ec2 machines etc.
 **5.** outputs, print out values after resource creation.
+**6.** locals - overriding variable values.
 
 -   If you have more than than one profile in your terraform config then you should specify the provider alias/name in every resource or data source in your config. Your provider should also specify the profile and alias/name for the provider.
 -   assume_role_policy in a role means another AWS account can assume this role. The assume role policy also needs the principle (the other AWS account id) specified.
@@ -29,3 +30,11 @@ When you need VPC peering:
 **1.** VPCs are in different AWS accounts.
 **2.** VPCs are in same account but in different regions.
 **3.** 2 VPCs in thesame account.
+
+-   gitLabs vs gitOps?
+
+Authentication methods:
+**1.** instance profiles
+**2.** access keys and secret keys
+**3.** credentials file and profile
+**4.** session profile
