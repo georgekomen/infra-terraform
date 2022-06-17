@@ -21,3 +21,6 @@ Terraform :
 -   assume_role_policy in a role means another AWS account can assume this role. The assume role policy also needs the principle (the other AWS account id) specified.
 
 -   what is intra subnets?
+-   plural sight course on AWS terraform: https://www.pluralsight.com/courses/implementing-terraform-aws
+-   assume_role inside a provider scope means we want to assume a role that's in another account
+-   how to create a vpc peering connection between two accounts: https://app.pluralsight.com/course-player?clipId=14c7aadd-a4d0-4607-832a-a7fc25687ea6
