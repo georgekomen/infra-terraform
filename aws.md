@@ -51,3 +51,9 @@ Terraform work spaces:
 -   Terraform workspaces uses the same configuration but the difference is the state.
 -   this feature supports deployment to multiple environments
 -   you define the terraform workspace with terraform.workspace
+
+AWS Code tools:
+
+-   code commit - source control
+-   code build - continuous deployment
+-   code pipeline - deploy code in stages accross multiple environments
