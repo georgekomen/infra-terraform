@@ -38,3 +38,16 @@ Authentication methods:
 **2.** access keys and secret keys
 **3.** credentials file and profile
 **4.** session profile
+
+IAC fundamentals:
+
+-   infrastructure defined in a software defined way
+-   your configurations are able to adopt software development principles like reusability and repeatability (e.g., terraform modules)
+-   source control e.g., with git
+-   automation to multiple envs (CICD)
+
+Terraform work spaces:
+
+-   Terraform workspaces uses the same configuration but the difference is the state.
+-   this feature supports deployment to multiple environments
+-   you define the terraform workspace with terraform.workspace
